@@ -1,13 +1,19 @@
+# Porta dinâmica do Render
 server.port=${PORT:8080}
 
+# Datasource (pegando de env vars)
 spring.datasource.url=${DB_URL}
 spring.datasource.username=${DB_USER}
 spring.datasource.password=${DB_PASS}
-spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
+spring.jpa.hibernate.ddl-auto=update
 
-spring.jpa.hibernate.ddl-auto=none
-spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.SQLServerDialect
+# JWT
+jwt.secret=${JWT_SECRET}
+jwt.expirationMs=${JWT_EXPIRATION_MS:86400000}
 
-app.jwt.secret=${JWT_SECRET}
-app.cors.allowed-origins=${CORS_ORIGINS:http://localhost:3000}
+# CORS (lista separada por vírgula)
+cors.allowed-origins=${CORS_ORIGINS}
+
+# (opcional) log
+logging.level.root=${LOGGING_LEVEL_ROOT:INFO}
+logging.level.org.springframework=${LOGGING_LEVEL_ORG_SPRINGFRAMEWORK:WARN}
