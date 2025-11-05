@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: auramind-api
+    name: AuraMind_API_V2-1
     env: docker
     plan: free
     healthCheckPath: /actuator/health
