@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: auramind-api
+    env: docker
+    plan: free
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: DB_URL
+        value: jdbc:sqlserver://auramind-db.database.windows.net:1433;databaseName=AuraMind;encrypt=true;trustServerCertificate=true
+      - key: DB_USER
+        value: auramind_user
+      - key: DB_PASS
+        value: senhaSegura123!
+      - key: JWT_SECRET
+        value: minhaChaveJWTsuperSeguraDeMaisDe32Caracteres
+      - key: CORS_ORIGINS
+        value: https://auramindapp.onrender.com, http://localhost:3000
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx350m
+      - key: TZ
+        value: America/Sao_Paulo
+      - key: LOGGING_LEVEL_ROOT
+        value: INFO
+      - key: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK
+        value: WARN
+      - key: JWT_EXPIRATION_MS
+        value: "86400000"
