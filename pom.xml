@@ -48,22 +48,16 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
-<!-- H2 para DEMO -->
-    <dependency>
-      <groupId>com.h2database</groupId>
-      <artifactId>h2</artifactId>
-      <scope>runtime</scope>
-     </dependency>
 
-
-    <!-- MySQL driver (Java 17 compatível) -->
+    <!-- REMOVER: com.microsoft.sqlserver:mssql-jdbc -->
+    <!-- ADICIONAR: MySQL driver -->
     <dependency>
       <groupId>com.mysql</groupId>
       <artifactId>mysql-connector-j</artifactId>
       <version>8.3.0</version>
     </dependency>
 
-    <!-- JWT 0.12.5 -->
+    <!-- JJWT -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>
@@ -92,7 +86,6 @@
 
   <build>
     <plugins>
-      <!-- Compilar com Java 17 -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -103,15 +96,12 @@
         </configuration>
       </plugin>
 
-      <!-- Gerar JAR executável (fat jar com manifest) -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <executions>
           <execution>
-            <goals>
-              <goal>repackage</goal>
-            </goals>
+            <goals><goal>repackage</goal></goals>
           </execution>
         </executions>
       </plugin>
