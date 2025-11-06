@@ -29,7 +29,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       String token = auth.substring(7);
       try {
         Long uid = jwt.parseUserId(token);
-        var authToken = new UsernamePasswordAuthenticationToken(uid, null, List.of());
+       var authToken = new UsernamePasswordAuthenticationToken(uid, null, List.of());
+
         SecurityContextHolder.getContext().setAuthentication(authToken);
       } catch (Exception ignored) { }
     }
