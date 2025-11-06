@@ -49,14 +49,14 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
-    <!-- SQL Server driver (Java 11+, funciona no Java 17) -->
+    <!-- MySQL driver (Java 17 compatível) -->
     <dependency>
-      <groupId>com.microsoft.sqlserver</groupId>
-      <artifactId>mssql-jdbc</artifactId>
-      <version>12.6.1.jre11</version>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>8.3.0</version>
     </dependency>
 
-    <!-- JJWT 0.12.5 -->
+    <!-- JWT 0.12.5 -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>
