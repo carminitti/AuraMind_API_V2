@@ -1,0 +1,5 @@
+# se ainda não existir ./mvnw, ./mvnw.cmd e pasta .mvn
+mvn -N wrapper
+git add .mvn mvnw mvnw.cmd
+git commit -m "add maven wrapper"
+git push
