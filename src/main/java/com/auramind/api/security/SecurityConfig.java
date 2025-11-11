@@ -13,15 +13,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+
   private final JwtAuthFilter jwtAuthFilter;
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
+      .cors(cors -> {}) // ✅ importante ativar o CorsFilter global abaixo
       .csrf(csrf -> csrf.disable())
       .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       .authorizeHttpRequests(auth -> auth
@@ -29,7 +32,8 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
         .anyRequest().authenticated()
       )
-      .addFilterBefore(jwtAuthFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+      .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
     return http.build();
   }
 
@@ -37,10 +41,14 @@ public class SecurityConfig {
   public CorsFilter corsFilter() {
     var source = new UrlBasedCorsConfigurationSource();
     var config = new CorsConfiguration();
+
+    // ✅ Permite comunicação com seu app Android e browsers
     config.setAllowCredentials(true);
-    config.setAllowedOriginPatterns(Arrays.asList("*"));
-    config.setAllowedHeaders(Arrays.asList("*"));
-    config.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS"));
+    config.setAllowedOriginPatterns(List.of("*")); // pode restringir se quiser
+    config.setAllowedHeaders(List.of("*"));
+    config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+    config.setExposedHeaders(List.of("Authorization")); // importante p/ JWT
+
     source.registerCorsConfiguration("/**", config);
     return new CorsFilter(source);
   }
