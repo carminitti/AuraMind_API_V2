@@ -1,25 +1,49 @@
 package com.auramind.api.diary;
 
-import java.util.List;
+import com.auramind.api.ai.AiChatClient;
 import com.auramind.api.ai.dto.ChatDtos;
+import com.auramind.api.ai.dto.ChatDtos.ChatRequest;
+import com.auramind.api.ai.dto.ChatDtos.ChatResponse;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
-public class DiaryDTOs {
+import java.util.ArrayList;
+import java.util.List;
 
-    public static class DiaryReq {
-        private String message;
-        private List<ChatDtos.Msg> history;
+@RestController
+@RequestMapping("/api/diary")
+public class DiaryController {
 
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
+    private final AiChatClient ai;
 
-        public List<ChatDtos.Msg> getHistory() { return history; }
-        public void setHistory(List<ChatDtos.Msg> history) { this.history = history; }
+    public DiaryController(AiChatClient ai) {
+        this.ai = ai;
     }
 
-    public static class DiaryRes {
-        private String aiReply;
+    @PostMapping("/message")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<DiaryDTOs.DiaryRes> message(
+            @RequestBody DiaryDTOs.DiaryReq req,
+            @RequestHeader(value = "X-User-Id", required = false) String uid
+    ) {
+        String userId = (uid == null ? "anonymous" : uid);
 
-        public String getAiReply() { return aiReply; }
-        public void setAiReply(String aiReply) { this.aiReply = aiReply; }
+        List<ChatDtos.Msg> history = req.getHistory();
+        if (history == null) history = new ArrayList<>();
+
+        boolean hasSystem = history.stream().anyMatch(m -> "system".equals(m.role()));
+        if (!hasSystem) {
+            history.add(new ChatDtos.Msg("system",
+                    "Você é um psicólogo clínico, responda de forma humana e empática."));
+        }
+
+        ChatRequest aiReq = new ChatRequest(userId, req.getMessage(), history);
+        ChatResponse aiRes = ai.chat(aiReq);
+
+        DiaryDTOs.DiaryRes res = new DiaryDTOs.DiaryRes();
+        res.setAiReply(aiRes.botReply());
+
+        return ResponseEntity.ok(res);
     }
 }
