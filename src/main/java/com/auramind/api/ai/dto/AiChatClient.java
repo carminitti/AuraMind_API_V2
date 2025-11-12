@@ -3,32 +3,25 @@ package com.auramind.api.ai;
 import com.auramind.api.ai.dto.ChatDtos.ChatRequest;
 import com.auramind.api.ai.dto.ChatDtos.ChatResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class AiChatClient {
 
-    private final WebClient aiWebClient;
-    private final String chatPath;
+    private final RestTemplate rest;
+    private final String chatUrl;
 
-    public AiChatClient(WebClient aiWebClient, @Value("${app.ai.chat-path}") String chatPath) {
-        this.aiWebClient = aiWebClient;
-        this.chatPath = chatPath; // "chat"
+    public AiChatClient(
+            RestTemplate restTemplate,
+            @Value("${app.ai.base-url}") String baseUrl,
+            @Value("${app.ai.chat-path}") String chatPath
+    ) {
+        this.rest = restTemplate;
+        this.chatUrl = baseUrl + chatPath;   // Ex.: https://IA/chat
     }
 
-    public ChatResponse chat(ChatRequest req) {
-        return aiWebClient.post()
-                .uri(chatPath)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
-                .bodyValue(req)
-                .retrieve()
-                .bodyToMono(ChatResponse.class)
-                .onErrorResume(ex ->
-                        Mono.error(new RuntimeException("Falha ao chamar IA: " + ex.getMessage(), ex)))
-                .block();
+    public ChatResponse chat(ChatRequest request) {
+        return rest.postForObject(chatUrl, request, ChatResponse.class);
     }
 }
