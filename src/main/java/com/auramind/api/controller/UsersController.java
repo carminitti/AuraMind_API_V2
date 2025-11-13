@@ -31,18 +31,19 @@ public class UsersController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping("/me")
+   @GetMapping("/me")
     public MeResponse me(@AuthenticationPrincipal UserDetails details) {
-        String email = details.getUsername();
+    String email = details.getUsername();
 
-        // findByEmail está retornando Optional<User>, então tratamos assim:
-        User u = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + email));
+    // findByEmail retorna Optional<User>
+    User u = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + email));
 
-        MeResponse resp = new MeResponse();
-        resp.setId(u.getId());
-        resp.setEmail(u.getEmail());
-        resp.setDisplayName(u.getDisplayName());
-        return resp;
-    }
+    MeResponse resp = new MeResponse();
+    resp.setId(u.getId());
+    resp.setEmail(u.getEmail());
+    resp.setDisplayName(u.getDisplayName());
+    return resp;
+}
+
 }
