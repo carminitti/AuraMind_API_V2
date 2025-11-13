@@ -9,34 +9,31 @@ import org.springframework.web.client.RestTemplate;
 public class AiChatClient {
 
     private final RestTemplate rest;
-    private final String chatUrl;
     private final boolean enabled;
+    private final String chatUrl;
 
     public AiChatClient(RestTemplate restTemplate) {
         this.rest = restTemplate;
 
-        // Lê variáveis de ambiente diretamente (opcional)
-        String baseUrl = System.getenv("APP_AI_BASE_URL");   // ex.: https://minha-ia.onrender.com/
-        String chatPath = System.getenv("APP_AI_CHAT_PATH"); // ex.: "chat"
+        // PARA AGORA: IA DESATIVADA
+        // Você não tem IA rodando no Render, então vamos deixar desativada.
+        this.enabled = false;
+        this.chatUrl = null;
 
-        if (baseUrl == null || baseUrl.isBlank()) {
-            this.enabled = false;
-            this.chatUrl = null;
-        } else {
-            if (chatPath == null || chatPath.isBlank()) {
-                chatPath = "chat";
-            }
-            this.enabled = true;
-            this.chatUrl = baseUrl + chatPath;
-        }
+        // 🔹 Quando quiser ligar a IA de verdade, você pode trocar esse construtor para ler
+        // variáveis de ambiente, por exemplo:
+        //
+        // String baseUrl = System.getenv("APP_AI_BASE_URL");
+        // String chatPath = System.getenv("APP_AI_CHAT_PATH");
+        // ...
     }
 
     public ChatResponse chat(ChatRequest request) {
-        // IA desabilitada → resposta padrão, sem chamar nada externo
+        // IA desativada → responde com texto padrão, não chama nada externo
         if (!enabled) {
             String fallback =
                 "No momento a inteligência artificial do diário não está disponível. " +
-                "Mas sua mensagem foi recebida. Tente novamente mais tarde.";
+                "Mas sua mensagem foi recebida pelo sistema. Tente novamente mais tarde.";
 
             return new ChatResponse(
                 request.userId(),
@@ -45,7 +42,7 @@ public class AiChatClient {
             );
         }
 
-        // Quando você configurar a IA de verdade e as env vars, isso passa a funcionar
+        // (Código que chamaria a IA real quando você ativar no futuro)
         return rest.postForObject(chatUrl, request, ChatResponse.class);
     }
 }
