@@ -1,0 +1,15 @@
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\ai\dto\ChatDtos.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\service\JwtService.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\diary\DiaryDTOs.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\diary\DiaryController.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\controller\UsersController.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\controller\AuthController.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\ai\dto\AiChatClient.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\repository\UserRepository.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\config\WebClientConfig.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\model\User.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\dto\AuthDTOs.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\service\AuthService.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\security\JwtAuthFilter.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\AuraMindApiApplication.java
+C:\Users\USER\Documents\GitHub\AuraMind_API_V2\src\main\java\com\auramind\api\security\SecurityConfig.java
