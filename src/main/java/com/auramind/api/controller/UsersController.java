@@ -10,39 +10,39 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UsersController {
 
-  // DTO de resposta para /me
-  public static class MeResponse {
-    private Long id;
-    private String email;
-    private String displayName;
+    public static class MeResponse {
+        private Long id;
+        private String email;
+        private String displayName;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
 
-    public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
-  }
+        public String getDisplayName() { return displayName; }
+        public void setDisplayName(String displayName) { this.displayName = displayName; }
+    }
 
-  private final UserRepository userRepository;
+    private final UserRepository userRepository;
 
-  public UsersController(UserRepository userRepository) {
-    this.userRepository = userRepository;
-  }
+    public UsersController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
-  @GetMapping("/me")
-  public MeResponse me(@AuthenticationPrincipal UserDetails details) {
-    // email do usuário logado vem do UserDetails
-    String email = details.getUsername();
-    User u = userRepository.findByEmail(email);
+    @GetMapping("/me")
+    public MeResponse me(@AuthenticationPrincipal UserDetails details) {
+        String email = details.getUsername();
 
-    MeResponse resp = new MeResponse();
-    resp.setId(u.getId());
-    resp.setEmail(u.getEmail());
-    resp.setDisplayName(u.getDisplayName());
+        // findByEmail está retornando Optional<User>, então tratamos assim:
+        User u = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado: " + email));
 
-    return resp;
-  }
+        MeResponse resp = new MeResponse();
+        resp.setId(u.getId());
+        resp.setEmail(u.getEmail());
+        resp.setDisplayName(u.getDisplayName());
+        return resp;
+    }
 }
