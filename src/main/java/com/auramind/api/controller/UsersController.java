@@ -1,7 +1,7 @@
 package com.auramind.api.controller;
 
 import com.auramind.api.model.User;
-import com.auramind.api.repo.UserRepo;
+import com.auramind.api.repository.UserRepository;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UsersController {
 
+  // DTO de resposta para /me
   public static class MeResponse {
     private Long id;
     private String email;
@@ -25,15 +26,17 @@ public class UsersController {
     public void setDisplayName(String displayName) { this.displayName = displayName; }
   }
 
-  private final UserRepo repo;
+  private final UserRepository userRepository;
 
-  public UsersController(UserRepo repo) {
-    this.repo = repo;
+  public UsersController(UserRepository userRepository) {
+    this.userRepository = userRepository;
   }
 
   @GetMapping("/me")
   public MeResponse me(@AuthenticationPrincipal UserDetails details) {
-    User u = repo.findByEmail(details.getUsername());
+    // email do usuário logado vem do UserDetails
+    String email = details.getUsername();
+    User u = userRepository.findByEmail(email);
 
     MeResponse resp = new MeResponse();
     resp.setId(u.getId());
