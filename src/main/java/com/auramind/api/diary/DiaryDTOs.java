@@ -1,17 +1,16 @@
 package com.auramind.api.diary;
 
 import lombok.Data;
+import java.util.List;
 
 public class DiaryDTOs {
 
-    // ---------- REQUEST ----------
     @Data
     public static class DiaryReq {
-        private String userId;
-        private String message;
+        private String message;        // Texto digitado pelo usuário no diário
+        private List<String> history;  // Histórico anterior das mensagens
     }
 
-    // ---------- RESPONSE ----------
     @Data
     public static class DiaryRes {
         private String aiReply;
