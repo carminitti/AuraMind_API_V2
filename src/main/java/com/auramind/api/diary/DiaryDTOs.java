@@ -6,18 +6,12 @@ import lombok.Data;
 
 public class DiaryDTOs {
 
-    @Data
-    public static class DiaryReq {
-        private String message;
-        private List<ChatDtos.Msg> history;
-    }
+   public static class DiaryRes {
+    private String aiReply;
+    public DiaryRes() {}
+    public DiaryRes(String aiReply) { this.aiReply = aiReply; }
+    public String getAiReply() { return aiReply; }
+    public void setAiReply(String aiReply) { this.aiReply = aiReply; }
+}
 
-    @Data
-    public static class DiaryRes {
-        private String aiReply;
-
-        public DiaryRes(String aiReply) {
-            this.aiReply = aiReply;
-        }
-    }
 }

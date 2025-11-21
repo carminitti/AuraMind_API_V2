@@ -1,46 +1,44 @@
 package com.auramind.api.service;
 
-import com.auramind.api.dto.AuthDtos.*;
+import com.auramind.api.dto.AuthDTOs;
 import com.auramind.api.model.User;
 import com.auramind.api.repository.UserRepository;
-import com.auramind.api.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepo;
-    private final PasswordEncoder encoder;
-    private final JwtTokenProvider jwt;
+    private final UserRepository userRepository;
+    private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthResponse register(RegisterRequest req) {
-        if (userRepo.existsByEmail(req.email()))
-            throw new RuntimeException("Email already registered");
-
+    public AuthDTOs.AuthResponse register(AuthDTOs.RegisterRequest req) {
         User u = new User();
-        u.setEmail(req.email());
-        u.setDisplayName(req.displayName());
-        u.setPasswordHash(encoder.encode(req.password())); // <-- FIX
+        u.setEmail(req.getEmail());
+        u.setDisplayName(req.getDisplayName());
+        u.setPasswordHash(passwordEncoder.encode(req.getPassword())); // usar passwordHash
+        userRepository.save(u);
 
-        userRepo.save(u);
-
-        String token = jwt.generateToken(u.getId().toString());
-
-        return new AuthResponse(u.getId(), u.getEmail(), u.getDisplayName(), token);
+        var userDetails = new org.springframework.security.core.userdetails.User(u.getEmail(), u.getPasswordHash(), Collections.emptyList());
+        String token = jwtService.generateToken(userDetails);
+        return new AuthDTOs.AuthResponse(u.getId(), u.getEmail(), u.getDisplayName(), token);
     }
 
-    public AuthResponse login(LoginRequest req) {
-        User u = userRepo.findByEmail(req.email())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+    public AuthDTOs.AuthResponse login(AuthDTOs.LoginRequest req) {
+        User u = userRepository.findByEmail(req.getEmail())
+                .orElseThrow(() -> new RuntimeException("Credenciais inválidas"));
 
-        if (!encoder.matches(req.password(), u.getPasswordHash())) // <-- FIX
-            throw new RuntimeException("Invalid credentials");
+        if (!passwordEncoder.matches(req.getPassword(), u.getPasswordHash())) {
+            throw new RuntimeException("Credenciais inválidas");
+        }
 
-        String token = jwt.generateToken(u.getId().toString());
-
-        return new AuthResponse(u.getId(), u.getEmail(), u.getDisplayName(), token);
+        var userDetails = new org.springframework.security.core.userdetails.User(u.getEmail(), u.getPasswordHash(), Collections.emptyList());
+        String token = jwtService.generateToken(userDetails);
+        return new AuthDTOs.AuthResponse(u.getId(), u.getEmail(), u.getDisplayName(), token);
     }
 }
