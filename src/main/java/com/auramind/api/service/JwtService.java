@@ -39,4 +39,17 @@ public class JwtService {
                 .getBody()
                 .getSubject();
     }
+
+    public boolean isTokenValid(String token) {
+    try {
+        Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token);
+        return true;
+    } catch (Exception e) {
+        return false;
+    }
+}
+
 }
