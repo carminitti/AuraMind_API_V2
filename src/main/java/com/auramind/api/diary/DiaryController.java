@@ -38,7 +38,8 @@ public class DiaryController {
                     "Você é um psicólogo clínico, responda de forma humana e empática."));
         }
 
-        ChatRequest aiReq = new ChatRequest(userId, req.getMessage(), history);
+        ChatRequest aiReq = new ChatRequest(userId, req.getMessage(), history, "");
+
         ChatResponse aiRes = ai.chat(aiReq);
 
         DiaryDTOs.DiaryRes res = new DiaryDTOs.DiaryRes();
