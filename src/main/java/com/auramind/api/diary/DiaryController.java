@@ -22,29 +22,22 @@ public class DiaryController {
     }
 
     @PostMapping("/message")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<DiaryDTOs.DiaryRes> message(
-            @RequestBody DiaryDTOs.DiaryReq req,
-            @RequestHeader(value = "X-User-Id", required = false) String uid
-    ) {
-        String userId = (uid == null ? "anonymous" : uid);
-
-        List<ChatDtos.Msg> history = req.getHistory();
-        if (history == null) history = new ArrayList<>();
-
-        boolean hasSystem = history.stream().anyMatch(m -> "system".equals(m.role()));
-        if (!hasSystem) {
-            history.add(new ChatDtos.Msg("system",
-                    "Você é um psicólogo clínico, responda de forma humana e empática."));
-        }
-
-        ChatRequest aiReq = new ChatRequest(userId, req.getMessage(), history, "");
-
-        ChatResponse aiRes = ai.chat(aiReq);
-
-        DiaryDTOs.DiaryRes res = new DiaryDTOs.DiaryRes();
-        res.setAiReply(aiRes.botReply());
-
-        return ResponseEntity.ok(res);
+public DiaryDTOs.DiaryRes message(@RequestBody DiaryDTOs.DiaryReq req, Authentication authentication) {
+    String email = null;
+    Long userId = null;
+    if (authentication != null && authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.UserDetails ud) {
+        email = ud.getUsername();
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        userId = user.getId();
+    } else {
+        throw new RuntimeException("Usuário não autenticado");
     }
+
+    // montar ChatRequest (use ChatDtos.ChatRequest)
+    var history = req.history(); // adaptar ao DTO
+    var chatReq = new com.auramind.api.ai.dto.ChatDtos.ChatRequest(String.valueOf(userId), req.getMessage(), history, "");
+    var aiResp = aiChatClient.chat(chatReq); // ajustado ao seu client
+    // opcional: salvar no DB...
+    return new DiaryDTOs.DiaryRes(aiResp.botReply());
 }
+

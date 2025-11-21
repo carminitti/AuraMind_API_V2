@@ -1,54 +1,61 @@
 package com.auramind.api.service;
 
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.Date;
+import java.util.function.Function;
 
 @Service
 public class JwtService {
 
-  private final SecretKey key;
+    @Value("${app.jwt.secret}")
+    private String secretKey; // configure no Render: app.jwt.secret
 
-  public JwtService(@Value("${app.jwt.secret}") String secret) {
-    // Se o segredo for texto puro (não Base64):
-    this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-    // Se usar Base64, troque por:
-    // this.key = Keys.hmacShaKeyFor(io.jsonwebtoken.io.Decoders.BASE64.decode(secret));
-  }
+    @Value("${app.jwt.expiration-ms:3600000}") // 1 hora por padrão
+    private long expirationMs;
 
-  public String issue(Long userId, String email) {
-    Instant now = Instant.now();
-    return Jwts.builder()
-        .subject(email)               // API 0.12.x
-        .claim("uid", userId)
-        .issuedAt(Date.from(now))
-        // .expiration(Date.from(now.plusMillis(expirationMs))) // (se quiser expiração, reative)
-        .signWith(key)
-        .compact();
-  }
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(secretKey.getBytes());
+    }
 
-  public Long parseUserId(String token) {
-    var claims = Jwts.parser().verifyWith(key).build() // 0.12.x
-        .parseSignedClaims(token)
-        .getPayload();
+    public String generateToken(UserDetails userDetails) {
+        return Jwts.builder()
+                .setSubject(userDetails.getUsername()) // email como subject
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
 
-    Object uid = claims.get("uid");
-    if (uid instanceof Integer) return ((Integer) uid).longValue();
-    if (uid instanceof Long) return (Long) uid;
-    if (uid instanceof String) return Long.parseLong((String) uid);
-    throw new IllegalArgumentException("uid inválido no token");
-  }
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
 
-  public String extractSubject(String token) {
-    return Jwts.parser().verifyWith(key).build()
-        .parseSignedClaims(token)
-        .getPayload()
-        .getSubject();
-  }
+    public boolean validateToken(String token, UserDetails userDetails) {
+        try {
+            final String username = extractUsername(token);
+            return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
+        return claimsResolver.apply(claims);
+    }
+
+    private boolean isTokenExpired(String token) {
+        final Date expiration = extractExpiration(token);
+        return expiration.before(new Date());
+    }
 }
