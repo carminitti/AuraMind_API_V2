@@ -1,4 +1,6 @@
 package com.auramind.api.service;
+import org.springframework.stereotype.Service;
+import java.util.Collections;
 
 import com.auramind.api.model.User;
 import com.auramind.api.repository.UserRepository;
@@ -10,7 +12,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepo;
+    private final UserRepository userRepository;
+
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
 
    @Override
 public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

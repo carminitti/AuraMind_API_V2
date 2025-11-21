@@ -15,6 +15,16 @@ public class JwtService {
 
     private SecretKey secretKey;
 
+public String parseUsername(String token) {
+    Claims claims = Jwts.parser()
+            .setSigningKey(secret)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
+
+    return claims.getSubject();
+}
+
     @PostConstruct
     public void init() {
         secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);

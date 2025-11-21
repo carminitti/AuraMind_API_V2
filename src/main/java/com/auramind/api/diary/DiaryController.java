@@ -36,7 +36,19 @@ public class DiaryController {
         User u = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
         Long userId = u.getId();
 
-        var chatReq = new ChatDtos.ChatRequest(String.valueOf(userId), req.getMessage(), req.getHistory(), "");
+        List<ChatDtos.Msg> convertedHistory = null;
+if (req.getHistory() != null) {
+    convertedHistory = req.getHistory().stream()
+            .map(msg -> new ChatDtos.Msg("user", msg))
+            .toList();
+}
+
+var chatReq = new ChatDtos.ChatRequest(
+        String.valueOf(userId),
+        req.getMessage(),
+        convertedHistory,
+        ""
+);
         var aiResp = ai.chat(chatReq);
         return new DiaryDTOs.DiaryRes(aiResp.botReply());
     }
