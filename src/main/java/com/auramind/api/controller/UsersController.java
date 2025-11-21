@@ -1,48 +1,80 @@
-import org.springframework.security.core.Authentication;
-import org.springframework.web.server.ResponseStatusException;
+package com.auramind.api.controller;
+
+import com.auramind.api.model.User;
+import com.auramind.api.repository.UserRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-// ... resto da classe UsersController ...
+@RestController
+@RequestMapping("/api/users")
+public class UsersController {
 
-@GetMapping("/me")
-public MeResponse me(Authentication authentication) {
-    if (authentication == null || authentication.getPrincipal() == null) {
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado");
+    public static class MeResponse {
+        private Long id;
+        private String email;
+        private String displayName;
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+
+        public String getDisplayName() { return displayName; }
+        public void setDisplayName(String displayName) { this.displayName = displayName; }
     }
 
-    Object principal = authentication.getPrincipal();
-    User u = null;
+    private final UserRepository userRepository;
 
-    // Caso o principal seja UserDetails (padrão do Spring)
-    if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        u = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado: " + email));
+    public UsersController(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
-    // Caso o JwtAuthFilter tenha colocado apenas o user id como principal (Long)
-    else if (principal instanceof Long idLong) {
-        u = userRepository.findById(idLong)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado: id=" + idLong));
-    }
-    // Caso o principal venha como String (pode ser id em string ou email)
-    else if (principal instanceof String pStr) {
-        // tenta interpretar como id
-        try {
-            Long idParsed = Long.parseLong(pStr);
-            u = userRepository.findById(idParsed)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado: id=" + pStr));
-        } catch (NumberFormatException e) {
-            // não é id, assume que seja email
-            u = userRepository.findByEmail(pStr)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado: " + pStr));
+
+    @GetMapping("/me")
+    public MeResponse me(Authentication authentication) {
+
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado");
         }
-    } else {
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Principal do authentication inválido");
-    }
 
-    MeResponse resp = new MeResponse();
-    resp.setId(u.getId());
-    resp.setEmail(u.getEmail());
-    resp.setDisplayName(u.getDisplayName());
-    return resp;
+        Object principal = authentication.getPrincipal();
+        User u = null;
+
+        // Spring padrão (email)
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            String email = userDetails.getUsername();
+            u = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado: " + email));
+        }
+
+        // Nosso filtro JWT (id)
+        else if (principal instanceof Long idLong) {
+            u = userRepository.findById(idLong)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado: id=" + idLong));
+        }
+
+        // Pode vir string (id ou email)
+        else if (principal instanceof String pStr) {
+            try {
+                Long idParsed = Long.parseLong(pStr);
+                u = userRepository.findById(idParsed)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado: id=" + pStr));
+            } catch (NumberFormatException e) {
+                u = userRepository.findByEmail(pStr)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado: " + pStr));
+            }
+        }
+
+        else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Principal inválido");
+        }
+
+        MeResponse resp = new MeResponse();
+        resp.setId(u.getId());
+        resp.setEmail(u.getEmail());
+        resp.setDisplayName(u.getDisplayName());
+        return resp;
+    }
 }
