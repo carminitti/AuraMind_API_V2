@@ -8,4 +8,7 @@ public class AuraMindApiApplication {
   public static void main(String[] args) {
     SpringApplication.run(AuraMindApiApplication.class, args);
   }
+
+
+  
 }
