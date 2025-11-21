@@ -2,59 +2,38 @@ package com.auramind.api.diary;
 
 import com.auramind.api.ai.AiChatClient;
 import com.auramind.api.ai.dto.ChatDtos;
-import com.auramind.api.ai.dto.ChatDtos.ChatRequest;
-import com.auramind.api.ai.dto.ChatDtos.ChatResponse;
-import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/diary")
+@RequiredArgsConstructor
 public class DiaryController {
 
-    private final AiChatClient ai;
-    private final UserRepository userRepository;
+    private final AiChatClient aiChatClient;
 
-    public DiaryController(AiChatClient ai, UserRepository userRepository) {
-        this.ai = ai;
-        this.userRepository = userRepository;
-    }
-
-    @PostMapping("/message")
-    public DiaryDTOs.DiaryRes message(
+    @PostMapping("/send")
+    public DiaryDTOs.DiaryRes sendMessage(
             @RequestBody DiaryDTOs.DiaryReq req,
-            Authentication authentication
+            Authentication auth
     ) {
+        // pega o e-mail do usuário autenticado
+        String userEmail = auth.getName();
 
-        if (authentication == null || authentication.getPrincipal() == null) {
-            throw new RuntimeException("Usuário não autenticado");
-        }
-
-        var principal = (org.springframework.security.core.userdetails.UserDetails) authentication.getPrincipal();
-        String email = principal.getUsername();
-
-        var user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        Long userId = user.getId();
-
-        // monta o histórico
-        List<DiaryDTOs.Message> history = req.getHistory();
-
-        // monta requisição para IA
-        ChatRequest chatReq = new ChatRequest(
-                String.valueOf(userId),
+        // Cria o ChatRequest baseado no DTO final
+        ChatDtos.ChatRequest creq = new ChatDtos.ChatRequest(
+                userEmail,
                 req.getMessage(),
-                history,
-                ""
+                req.getHistory(),
+                null // profile não obrigatório
         );
 
-        // chama IA
-        ChatResponse aiResp = ai.chat(chatReq);
+        // chama a IA
+        ChatDtos.ChatResponse aiResp = aiChatClient.chat(creq);
 
-        // devolve resposta da IA
+        // retorna resposta final para o Android
         return new DiaryDTOs.DiaryRes(aiResp.botReply());
     }
 }

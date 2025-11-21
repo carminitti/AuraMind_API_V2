@@ -5,6 +5,9 @@ import com.auramind.api.ai.dto.ChatDtos;
 
 public class DiaryDTOs {
 
+    // ----------------------
+    // REQUEST
+    // ----------------------
     public static class DiaryReq {
         private String message;
         private List<ChatDtos.Msg> history;
@@ -16,10 +19,18 @@ public class DiaryDTOs {
         public void setHistory(List<ChatDtos.Msg> history) { this.history = history; }
     }
 
+    // ----------------------
+    // RESPONSE
+    // ----------------------
     public static class DiaryRes {
-        private String aiReply;
+    private String aiReply;
 
-        public String getAiReply() { return aiReply; }
-        public void setAiReply(String aiReply) { this.aiReply = aiReply; }
+    public DiaryRes(String aiReply) {
+        this.aiReply = aiReply;
     }
+
+    public String getAiReply() { return aiReply; }
+    public void setAiReply(String aiReply) { this.aiReply = aiReply; }
+}
+
 }
