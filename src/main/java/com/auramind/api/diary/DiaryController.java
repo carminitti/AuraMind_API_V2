@@ -1,4 +1,5 @@
 package com.auramind.api.diary;
+import java.util.List;
 
 import com.auramind.api.ai.AiChatClient;
 import com.auramind.api.ai.dto.ChatDtos;

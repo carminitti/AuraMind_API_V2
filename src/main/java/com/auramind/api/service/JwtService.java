@@ -13,26 +13,18 @@ import java.util.Date;
 @Service
 public class JwtService {
 
+    @Value("${JWT_SECRET}")
+    private String secret;
+
     private SecretKey secretKey;
 
-    @jakarta.annotation.PostConstruct
+    @PostConstruct
     public void init() {
-        String secret = System.getenv("JWT_SECRET");
-
-        if (secret == null || secret.length() < 32) {
-            throw new RuntimeException("ERRO: A variável JWT_SECRET não foi definida ou é muito curta!");
-        }
-
-        // Converte texto em chave
-        secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        secretKey = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    /** ----------------------
-     * GERA JWT
-     -----------------------*/
     public String generateToken(UserDetails user) {
-        long expirationMs = 1000 * 60 * 60 * 24 * 7; // 7 dias
-
+        long expirationMs = 1000L * 60 * 60 * 24; // 24h
         return Jwts.builder()
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date())
@@ -41,33 +33,24 @@ public class JwtService {
                 .compact();
     }
 
-    /** ----------------------
-     * EXTRAI EMAIL DO TOKEN
-     -----------------------*/
     public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
-    }
-
-    /** ----------------------
-     * VALIDA TOKEN
-     -----------------------*/
-    public boolean isTokenValid(String token) {
-        try {
-            extractAllClaims(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    /** ----------------------
-     * PARSE CLAIMS
-     -----------------------*/
-    private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
-                .getBody();
+                .getBody()
+                .getSubject();
+    }
+
+    public boolean isTokenValid(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
