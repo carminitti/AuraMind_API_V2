@@ -32,6 +32,9 @@ public class AiChatClient {
         this.authHeaderValue = authHeaderValue;
     }
 
+
+    
+
     public ChatResponse chat(ChatRequest request) {
         if (!enabled || chatUrl == null || chatUrl.isBlank()) {
             String fallback = "Serviço de IA indisponível. Tente novamente mais tarde.";
